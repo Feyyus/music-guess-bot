@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users & Memberships ───────────────────────────────────────
+
+model User {
+  id   BigInt  @id // Telegram ID
+  tag  String? // Telegram tag
+  name String  // Telegram username
+
+  guesses      Guess[]
+  roles        UserRole[]
+  gameRounds   GameRound[]
+  memberships  ChatMembership[]
+  wallet       Wallet?
+}
+
+model ChatMembership {
+  user   User   @relation(fields: [userId], references: [id])
+  userId BigInt
+  chat   Chat   @relation(fields: [chatId], references: [id])
+  chatId BigInt
+
+  joinedAt DateTime @default(now())
+  lastSeen DateTime @default(now())
+  isActive Boolean  @default(true)
+
+  @@id([userId, chatId])
+  @@index([chatId, isActive])
+  @@index([userId, isActive])
+}
+
+// ─── Roles ─────────────────────────────────────────────────────
+
+model Role {
+  id          Int        @id @default(autoincrement())
+  name        String
+  permissions Int        @default(0) // Bitfield
+  chatId      BigInt
+  userRoles   UserRole[]
+
+  @@unique([name, chatId])
+}
+
+model UserRole {
+  userId BigInt
+  roleId Int
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+// ─── Chats ─────────────────────────────────────────────────────
+
+model Chat {
+  id          BigInt           @id // Telegram chat ID
+  title       String
+  games       Game[]
+  memberships ChatMembership[]
+}
+
+// ─── Games & Rounds ────────────────────────────────────────────
+
+model Game {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  status    GameStatus @default(LOBBY)
+  currentSequence Int  @default(0) // Which round sequence is currently active (1-based)
+
+  // Game configuration
+  hintDelaySec    Int           @default(30)
+  autoAdvance     Boolean       @default(false)
+  advanceDelaySec Int           @default(10)
+  allowSelfGuess  Boolean       @default(false)
+  shuffle         Boolean       @default(true)
+  scoringPreset   ScoringPreset @default(classic)
+
+  rounds GameRound[]
+  chatId BigInt
+  chat   Chat      @relation(fields: [chatId], references: [id])
+}
+
+model GameRound {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  sequence  Int // Position in the game (1, 2, 3...)
+  phase     RoundPhase @default(DRAFT)
+
+  // Timing — startedAt is set exactly when phase transitions DRAFT → LIVE
+  startedAt   DateTime?
+  hintShownAt DateTime?
+  endedAt     DateTime?
+
+  // Track data (uploaded by user)
+  musicFileId   String  // Telegram file ID of the music
+  hintChatId    BigInt? // Telegram chat ID where hint was sent
+  hintMessageId BigInt? // Message ID of the hint
+  infoMessageId BigInt? // Message ID of the info message
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id])
+  userId BigInt
+  game   Game   @relation(fields: [gameId], references: [id])
+  gameId Int
+  guesses Guess[]
+
+  @@unique([gameId, sequence])
+  @@unique([gameId, userId]) // One submission per user per game
+}
+
+model Guess {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  guessedId BigInt // The user they guessed (can be correct or incorrect)
+  points    Int    // Denormalized: points calculated at guess time, not recalculated on scoring preset change
+
+  // Relations
+  round   GameRound @relation(fields: [roundId], references: [id])
+  roundId Int
+  user    User      @relation(fields: [userId], references: [id])
+  userId  BigInt
+
+  @@unique([roundId, userId])
+}
+
+// ─── Wallet ────────────────────────────────────────────────────
+
+model Wallet {
+  id        Int      @id @default(autoincrement())
+  userId    BigInt   @unique
+  balance   Int      @default(0) // Cached sum; authoritative value is SUM(WalletTransaction.amount)
+  updatedAt DateTime @updatedAt
+
+  user         User               @relation(fields: [userId], references: [id])
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  walletId        Int
+  amount          Int      // Positive = credit, negative = debit
+  reason          String   // e.g. "purchase:stars", "spend:extra_round", "refund"
+  relatedEntityId String?  // e.g. provider transaction ID, game ID
+  idempotencyKey  String   @unique // DB-enforced uniqueness — last line of defense against double-crediting
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+}
+
+// ─── Enums ─────────────────────────────────────────────────────
+
+enum GameStatus {
+  LOBBY
+  ACTIVE
+  ENDED
+}
+
+enum RoundPhase {
+  DRAFT
+  LIVE
+  COMPLETED
+}
+
+enum ScoringPreset {
+  classic
+  aggressive
+  gentle
+}

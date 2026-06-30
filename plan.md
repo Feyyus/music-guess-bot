@@ -10,9 +10,9 @@
 ## Phase 0 — Monorepo scaffold
 *Goal: empty-but-wired repo where `pnpm install` works and packages can import each other.*
 
-- [ ] Create repo root with `pnpm-workspace.yaml` listing `apps/*` and `packages/*`
-- [ ] Create `packages/db/` — copy `prisma/schema.prisma` from old repo, add `package.json` (`name: "@feyyus/db"`)
-- [ ] Add `prisma generate` and `prisma migrate` scripts to `packages/db/package.json`
+- [x] Create repo root with `pnpm-workspace.yaml` listing `apps/*` and `packages/*`
+- [x] Create `packages/db/` — copy `prisma/schema.prisma` from old repo, add `package.json` (`name: "@feyyus/db"`)
+- [x] Add `prisma generate` and `prisma migrate` scripts to `packages/db/package.json`
 - [ ] Create stub `packages/wallet/` with `package.json` (`name: "@feyyus/wallet"`) and empty `src/index.ts`
 - [ ] Create stub `packages/scheduler/` with `package.json` (`name: "@feyyus/scheduler"`) and empty `src/index.ts`
 - [ ] Create stub `packages/bot-kit/` with `package.json` (`name: "@feyyus/bot-kit"`) and empty `src/index.ts`
