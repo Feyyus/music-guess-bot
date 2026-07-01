@@ -1,15 +1,16 @@
 {
-  "name": "music-guess-bot-monorepo",
-  "private": true,
-  "packageManager": "pnpm@9.15.0",
-  "scripts": {
-    "build": "pnpm -r build"
-  },
-  "devDependencies": {
-    "typescript": "^5.6.3"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+    "name": "music-guess-bot-monorepo",
+    "private": true,
+    "packageManager": "pnpm@9.15.0",
+    "scripts": {
+        "build": "pnpm -r build"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.1",
+        "typescript": "^5.6.3"
+    },
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ]
 }

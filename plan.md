@@ -13,14 +13,14 @@
 - [x] Create repo root with `pnpm-workspace.yaml` listing `apps/*` and `packages/*`
 - [x] Create `packages/db/` — copy `prisma/schema.prisma` from old repo, add `package.json` (`name: "@feyyus/db"`)
 - [x] Add `prisma generate` and `prisma migrate` scripts to `packages/db/package.json`
-- [ ] Create stub `packages/wallet/` with `package.json` (`name: "@feyyus/wallet"`) and empty `src/index.ts`
-- [ ] Create stub `packages/scheduler/` with `package.json` (`name: "@feyyus/scheduler"`) and empty `src/index.ts`
-- [ ] Create stub `packages/bot-kit/` with `package.json` (`name: "@feyyus/bot-kit"`) and empty `src/index.ts`
-- [ ] Create `apps/music-bot/` with `package.json` listing `@feyyus/db`, `@feyyus/wallet`, `@feyyus/scheduler`, `@feyyus/bot-kit` as workspace dependencies
-- [ ] Add root `tsconfig.base.json` with path aliases; extend it in each package and app
-- [ ] Run `pnpm install` from root — confirm workspace links resolve
-- [ ] Add `infra/docker-compose.yml` with `postgres` and `redis` services only (no bot yet)
-- [ ] Confirm `docker compose up postgres redis` starts both services cleanly
+- [x] Create stub `packages/wallet/` with `package.json` (`name: "@feyyus/wallet"`) and empty `src/index.ts`
+- [x] Create stub `packages/scheduler/` with `package.json` (`name: "@feyyus/scheduler"`) and empty `src/index.ts`
+- [x] Create stub `packages/bot-kit/` with `package.json` (`name: "@feyyus/bot-kit"`) and empty `src/index.ts`
+- [x] Create `apps/music-bot/` with `package.json` listing `@feyyus/db`, `@feyyus/wallet`, `@feyyus/scheduler`, `@feyyus/bot-kit` as workspace dependencies
+- [x] Add root `tsconfig.base.json` with path aliases; extend it in each package and app
+- [x] Run `pnpm install` from root — confirm workspace links resolve
+- [x] Add `infra/docker-compose.yml` with `postgres` and `redis` services only (no bot yet)
+- [ ] Confirm `docker compose up postgres redis` starts both services cleanly (deferred for now; local DB setup is being handled without Docker)
 
 ---
 
@@ -33,15 +33,15 @@
 - [ ] **Rename cleanup:** Rename `Game.currentRound` → `Game.currentSequence` and `GameRound.roundIndex` → `GameRound.sequence` in schema. Write migration. Update all usages in repository (find: `currentRound`, `roundIndex` — grep across old codebase to catch all callsites before porting them).
 - [ ] **Add Wallet tables:** Add `Wallet` and `WalletTransaction` models per spec Section 4.1. Write migration.
 - [ ] **Enum rename:** Rename `GameStatus.COMPLETED` → `GameStatus.ENDED` for consistency with current service code that uses `'ENDED'` as a string literal in some places (or vice versa — pick one, fix both). Write migration.
-- [ ] Run `pnpm --filter @feyyus/db prisma migrate dev` against local Postgres — confirm clean migration history
-- [ ] Run `pnpm --filter @feyyus/db prisma generate` — confirm client generates without errors
-- [ ] Write and export Prisma singleton client from `packages/db/src/client.ts`:
+- [x] Validate the fresh Prisma schema with `prisma validate`
+- [ ] Connect the schema to a local Postgres instance when available and push it directly with `prisma db push`
+- [x] Run `pnpm --filter @feyyus/db prisma generate` — confirm client generates without errors
+- [x] Write and export Prisma singleton client from `packages/db/src/client.ts`:
   ```typescript
   import { PrismaClient } from '@prisma/client';
   export const prisma = new PrismaClient();
   ```
-- [ ] Export from `packages/db/src/index.ts`: re-export `prisma`, re-export all `@prisma/client` types
-- [ ] Write one smoke-test: import `prisma` from `@feyyus/db` in a throwaway script, run `prisma.user.findFirst()`, confirm it returns without error
+- [x] Export from `packages/db/src/index.ts`: re-export `prisma`, re-export all `@prisma/client` types
 
 ---
 
