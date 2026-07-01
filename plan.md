@@ -48,13 +48,13 @@
 ## Phase 2 — Wallet package
 *Goal: `@feyyus/wallet` is usable and correct before any bot code touches it.*
 
-- [ ] Implement `WalletService` in `packages/wallet/src/wallet.service.ts` per spec Section 5:
+- [x] Implement `WalletService` in `packages/wallet/src/wallet.service.ts` per spec Section 5:
   - `credit(userId, amount, reason, idempotencyKey)` — Prisma `$transaction`: upsert `Wallet`, insert `WalletTransaction`, update `Wallet.balance`. Catch unique constraint error on `idempotencyKey` and return existing transaction.
   - `debit(userId, amount, reason, idempotencyKey)` — same transaction pattern, throw `InsufficientFundsError` if `Wallet.balance < amount`.
   - `getBalance(userId)` — read `Wallet.balance` (cached, fast path).
   - `getHistory(userId)` — read `WalletTransaction[]` ordered by `createdAt DESC`.
-- [ ] Implement `InsufficientFundsError extends Error`
-- [ ] Export both from `packages/wallet/src/index.ts`
+- [x] Implement `InsufficientFundsError extends Error`
+- [x] Export both from `packages/wallet/src/index.ts`
 - [ ] Write unit tests for `WalletService` (use a real test DB or Prisma mock):
   - [ ] `credit` twice with same idempotencyKey → only one `WalletTransaction` row inserted, balance credited once
   - [ ] `debit` with sufficient balance → succeeds, balance decremented
